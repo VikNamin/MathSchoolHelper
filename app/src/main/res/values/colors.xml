@@ -2,4 +2,8 @@
 <resources>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+
+    <color name="panel_color_dark">#755D70</color><!--Цвет тулбара-->
+    <color name="toolbar_button_color_tint">#00BCD4</color><!--Цвет нажатой кнопки тулбара-->
+
 </resources>
