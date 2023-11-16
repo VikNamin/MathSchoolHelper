@@ -12,12 +12,19 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ExpandableListAdapter;
+import android.widget.ExpandableListView;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.squareup.picasso.Picasso;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -34,12 +41,17 @@ public class MainActivity extends AppCompatActivity {
 
     SharedPreferences mSettings;
 
-    ConstraintLayout contentLayout, hometaskLayout, videoLayout;
+    ConstraintLayout contentLayout, hometaskLayout, videoListLayout;
     LinearLayout profileLayout;
 
     ProgressBar progressBar;
     ImageView profileImageView, profileButton, videoButton, hometaskButton;
     TextView fioTextView, hometownTextView, birthTextView, numberTextView, nicknameTextView;
+
+    ExpandableListView expandableListView;
+    ExpandableListAdapter expandableListAdapter;
+    List<String> expandableListTitle;
+    HashMap<String, List<String>> expandableListDetail;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -52,7 +64,7 @@ public class MainActivity extends AppCompatActivity {
         profileLayout = findViewById(R.id.profileLayout);
         contentLayout = findViewById(R.id.contentConstraintLayout);
         hometaskLayout = findViewById(R.id.hometaskLayout);
-        videoLayout = findViewById(R.id.videoLessonLayout);
+        videoListLayout = findViewById(R.id.videoLessonListLayout);
 
         profileImageView = findViewById(R.id.profileImageView);
 
@@ -93,6 +105,7 @@ public class MainActivity extends AppCompatActivity {
                     ), android.graphics.PorterDuff.Mode.MULTIPLY
             );
 
+            // API Запросы, вывод информации о профиле
             Retrofit retrofit = new Retrofit.Builder()
                     .addConverterFactory(GsonConverterFactory.create())
                     .baseUrl("https://api.vk.com/method/")
@@ -117,6 +130,50 @@ public class MainActivity extends AppCompatActivity {
                 }
             });
 
+            // Вложенный список
+            expandableListView = (ExpandableListView) findViewById(R.id.expandableListView);
+            expandableListDetail = ExpandableListDataPump.getData();
+            expandableListTitle = new ArrayList<String>(expandableListDetail.keySet());
+            expandableListAdapter = new CustomExpandableListAdapter(this, expandableListTitle, expandableListDetail);
+            expandableListView.setAdapter(expandableListAdapter);
+            expandableListView.setOnGroupExpandListener(new ExpandableListView.OnGroupExpandListener() {
+
+                @Override
+                public void onGroupExpand(int groupPosition) {
+                    Toast.makeText(getApplicationContext(),
+                            expandableListTitle.get(groupPosition) + " List Expanded.",
+                            Toast.LENGTH_SHORT).show();
+                }
+            });
+
+            expandableListView.setOnGroupCollapseListener(new ExpandableListView.OnGroupCollapseListener() {
+
+                @Override
+                public void onGroupCollapse(int groupPosition) {
+                    Toast.makeText(getApplicationContext(),
+                            expandableListTitle.get(groupPosition) + " List Collapsed.",
+                            Toast.LENGTH_SHORT).show();
+
+                }
+            });
+
+            expandableListView.setOnChildClickListener(new ExpandableListView.OnChildClickListener() {
+                @Override
+                public boolean onChildClick(ExpandableListView parent, View v,
+                                            int groupPosition, int childPosition, long id) {
+                    Toast.makeText(
+                            getApplicationContext(),
+                            expandableListTitle.get(groupPosition)
+                                    + " -> "
+                                    + expandableListDetail.get(
+                                    expandableListTitle.get(groupPosition)).get(
+                                    childPosition), Toast.LENGTH_SHORT
+                    ).show();
+                    return false;
+                }
+            });
+
+            // Слушатели нажатий кнопок меню
             profileButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
@@ -127,7 +184,7 @@ public class MainActivity extends AppCompatActivity {
             videoButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    showVideo();
+                    showVideoList();
                 }
             });
 
@@ -149,7 +206,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void showProfile(){
         clearButtonFilters();
-        videoLayout.setVisibility(View.GONE);
+        videoListLayout.setVisibility(View.GONE);
         hometaskLayout.setVisibility(View.GONE);
 
         profileLayout.setVisibility(View.VISIBLE);
@@ -161,12 +218,12 @@ public class MainActivity extends AppCompatActivity {
         );
     }
 
-    private void showVideo(){
+    private void showVideoList(){
         clearButtonFilters();
         profileLayout.setVisibility(View.GONE);
         hometaskLayout.setVisibility(View.GONE);
 
-        videoLayout.setVisibility(View.VISIBLE);
+        videoListLayout.setVisibility(View.VISIBLE);
         videoButton.setColorFilter(
                 ContextCompat.getColor(
                         this,
@@ -178,7 +235,7 @@ public class MainActivity extends AppCompatActivity {
     private void showHometask(){
         clearButtonFilters();
         profileLayout.setVisibility(View.GONE);
-        videoLayout.setVisibility(View.GONE);
+        videoListLayout.setVisibility(View.GONE);
 
         hometaskLayout.setVisibility(View.VISIBLE);
         hometaskButton.setColorFilter(
@@ -201,6 +258,8 @@ public class MainActivity extends AppCompatActivity {
 //  2.2 -> Вывод информации из полученного ответа на экран ✅
 
 // 3. -> Список видеоуроков (вложенный список)
+//  3.5 -> Несколько разделов видеоуроков, 1 часть, 2 часть, разборы ЕГЭ, прочее и т.д., информацию об элементах вложить в БД Room?
+//         Сделать таблицу в БД, в которой хранятся: id, название урока, ссылка на YouTube, ссылка на превью
 
 // 4. -> Окно видеоуроков (тайминги, просмотнено/не просмотрено)
 // 5. -> Домашние задания (ЕГЭ) 1 часть
