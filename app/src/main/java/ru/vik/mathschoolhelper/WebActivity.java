@@ -86,7 +86,8 @@ public class WebActivity extends AppCompatActivity {
                     public void onResponse(Call<VkResponse> call, Response<VkResponse> response) {
                         findViewById(R.id.authWebView).setVisibility(View.GONE);
                         SharedPreferences.Editor editor = mSettings.edit();
-                        editor.putBoolean(APP_PREFERENCES_IS_LOGGED, true);
+                        boolean isLogged = true;
+                        editor.putBoolean(APP_PREFERENCES_IS_LOGGED, isLogged);
                         editor.putString(APP_PREFERENCES_ID, userId.toString());
                         editor.putString(APP_PREFERENCES_TOKEN, accessToken);
                         editor.apply();

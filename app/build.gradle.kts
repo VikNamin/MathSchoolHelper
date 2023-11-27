@@ -48,4 +48,7 @@ dependencies {
     // Picasso - работа с изображениями
     implementation ("com.squareup.picasso:picasso:2.8")
 
+    // Room - локальная база данных от Google
+    implementation ("androidx.room:room-runtime:2.6.0")
+    annotationProcessor ("androidx.room:room-compiler:2.6.0")
 }
