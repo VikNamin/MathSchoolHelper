@@ -1,3 +1,18 @@
 <resources>
     <string name="app_name">MathSchoolHelper</string>
+
+    <string-array name="taskType">
+        <item>Тема 1 - Планиметрия</item>
+        <item>Тема 2 - Векторы</item>
+        <item>Тема 3 - Стереометрия</item>
+        <item>Тема 4 - Начала теории вероятностей</item>
+        <item>Тема 5 - Вероятности сложных событий</item>
+        <item>Тема 6 - Простейшие уравнения</item>
+        <item>Тема 7 - Вычисления и преобразования</item>
+        <item>Тема 8 - Производная и первообразная</item>
+        <item>Тема 9 - Задачи с прикладным содержанием</item>
+        <item>Тема 10 - Текстовые задачи</item>
+        <item>Тема 11 - Графики функций</item>
+        <item>Тема 12 - Наибольшее и наименьшее значение функций</item>
+    </string-array>
 </resources>

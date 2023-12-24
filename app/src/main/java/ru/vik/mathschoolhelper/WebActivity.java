@@ -1,13 +1,12 @@
 package ru.vik.mathschoolhelper;
 
-import static ru.vik.mathschoolhelper.MainActivity.APP_PREFERENCES;
+import static ru.vik.mathschoolhelper.MainActivity.APP_PREFERENCES_NAME;
 import static ru.vik.mathschoolhelper.MainActivity.APP_PREFERENCES_ID;
 import static ru.vik.mathschoolhelper.MainActivity.APP_PREFERENCES_IS_LOGGED;
 import static ru.vik.mathschoolhelper.MainActivity.APP_PREFERENCES_TOKEN;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -19,15 +18,11 @@ import android.webkit.CookieManager;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
-import com.google.gson.annotations.SerializedName;
-
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
-import retrofit2.http.GET;
-import retrofit2.http.Query;
 import ru.vik.mathschoolhelper.VkAPI.VkUser;
 
 public class WebActivity extends AppCompatActivity {
@@ -43,7 +38,7 @@ public class WebActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_web);
 
-        mSettings = getSharedPreferences(APP_PREFERENCES, Context.MODE_PRIVATE);
+        mSettings = getSharedPreferences(APP_PREFERENCES_NAME, Context.MODE_PRIVATE);
 
         // Создаём объект WebView - браузер в приложении
         WebView webView = findViewById(R.id.authWebView);

@@ -13,6 +13,9 @@ public class Lesson {
     @ColumnInfo(name = "title")
     public String title;
 
+    @ColumnInfo(name = "html_url")
+    public String htmlUrl;
+
     @ColumnInfo(name = "url")
     public String url;
 
