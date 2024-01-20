@@ -4,6 +4,7 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.content.ContextCompat;
+import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.room.Room;
@@ -14,8 +15,6 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Looper;
 import android.util.Log;
 import android.view.View;
 import android.webkit.WebView;
@@ -40,18 +39,10 @@ import com.google.api.services.youtube.model.Video;
 import com.google.api.services.youtube.model.VideoListResponse;
 import com.squareup.picasso.Picasso;
 
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
-
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -66,7 +57,7 @@ import ru.vik.mathschoolhelper.Room.TaskDao;
 
 public class MainActivity extends AppCompatActivity {
 
-    private static final String TAG = "VikLog";
+    public static final String TAG = "VikLog";
     private static final String API_KEY = "AIzaSyAlF8ruzxhT8WCNw9_aOSJFkOvghASJhDc";
 
     public static final String APP_PREFERENCES_NAME = "app_settings";
@@ -77,7 +68,7 @@ public class MainActivity extends AppCompatActivity {
 
     SharedPreferences mSettings;
 
-    ConstraintLayout contentLayout, hometaskLayout, videoListLayout, videoLessonLayout;
+    ConstraintLayout contentLayout, hometaskLayout, videoListLayout, videoLessonLayout, hometaskListLayout;
     LinearLayout profileLayout;
 
     ProgressBar progressBar;
@@ -116,7 +107,7 @@ public class MainActivity extends AppCompatActivity {
         taskDao = db.taskDao();
 
         // Заполнение таблицы БД данными, если она не существует
-        if (!doesDatabaseExist(getApplicationContext(), DB_NAME)) {
+        if (!doesDatabaseExist(getApplicationContext())) {
             setSampleData(lessonDao, taskDao);
         }
 
@@ -129,6 +120,8 @@ public class MainActivity extends AppCompatActivity {
         videoListLayout = findViewById(R.id.videoLessonListLayout);
         videoLessonLayout = findViewById(R.id.videoLessonLayout);
 
+        hometaskListLayout = findViewById(R.id.taskRecyclerViewLayout);
+
         profileImageView = findViewById(R.id.profileImageView);
 
         profileButton = findViewById(R.id.cabinetButton);
@@ -138,6 +131,7 @@ public class MainActivity extends AppCompatActivity {
         fioTextView = findViewById(R.id.fioText);
         hometownTextView = findViewById(R.id.regionText);
         birthTextView = findViewById(R.id.bdText);
+        
         numberTextView = findViewById(R.id.telText);
         nicknameTextView = findViewById(R.id.vkText);
         descriptionTextView = findViewById(R.id.descriptionTextView);
@@ -218,7 +212,7 @@ public class MainActivity extends AppCompatActivity {
                                             int groupPosition, int childPosition, long id) {
                     // Открывается страница видеоурока
                     Log.d(TAG, "url: " + expandableListData.get(expandableListTitle.get(groupPosition)).get(childPosition).htmlUrl);
-                    showVideolesson(expandableListData.get(expandableListTitle.get(groupPosition)).get(childPosition).htmlUrl);
+                    showVideoLesson(expandableListData.get(expandableListTitle.get(groupPosition)).get(childPosition).htmlUrl);
                     videoNum = expandableListData.get(expandableListTitle.get(groupPosition)).get(childPosition).id;
                     return false;
                 }
@@ -381,10 +375,62 @@ public class MainActivity extends AppCompatActivity {
         task.taskImageUrl = "https://i.imgur.com/mFc54PO.png";
         task.answer = "82";
         taskDao.insertSample(task);
+
+        //-------------------------------------------//
+
+        task.taskType = "13";
+        task.taskImageUrl = "https://i.imgur.com/6m59vzH.png";
+        task.answer = "https://i.imgur.com/OeOppGi.png";
+        taskDao.insertSample(task);
+
+        task.taskType = "13";
+        task.taskImageUrl = "https://i.imgur.com/94qcJV9.png";
+        task.answer = "https://i.imgur.com/SxGPTbK.png";
+        taskDao.insertSample(task);
+
+        task.taskType = "13";
+        task.taskImageUrl = "https://i.imgur.com/KstTCdd.png";
+        task.answer = "https://i.imgur.com/E21K0Om.png";
+        taskDao.insertSample(task);
+
+        task.taskType = "13";
+        task.taskImageUrl = "https://i.imgur.com/eAbbC7z.png";
+        task.answer = "https://i.imgur.com/wYApcOc.png";
+        taskDao.insertSample(task);
+
+        task.taskType = "13";
+        task.taskImageUrl = "https://i.imgur.com/ih0oq6y.png";
+        task.answer = "https://i.imgur.com/aRaFGYO.png";
+        taskDao.insertSample(task);
+
+        task.taskType = "13";
+        task.taskImageUrl = "https://i.imgur.com/t9yTDhY.png";
+        task.answer = "https://i.imgur.com/RIupmay.png";
+        taskDao.insertSample(task);
+
+        task.taskType = "13";
+        task.taskImageUrl = "https://i.imgur.com/1Gp3zbI.png";
+        task.answer = "https://i.imgur.com/5eO9MAf.png";
+        taskDao.insertSample(task);
+
+        task.taskType = "13";
+        task.taskImageUrl = "https://i.imgur.com/WIU54cc.png";
+        task.answer = "https://i.imgur.com/OuWpO6K.png";
+        taskDao.insertSample(task);
+
+        task.taskType = "13";
+        task.taskImageUrl = "https://i.imgur.com/lkS22Lm.png";
+        task.answer = "https://i.imgur.com/izQnGUb.png";
+        taskDao.insertSample(task);
+
+        task.taskType = "13";
+        task.taskImageUrl = "https://i.imgur.com/Lmej7Ta.png";
+        task.answer = "https://i.imgur.com/juWI6Rh.png";
+        taskDao.insertSample(task);
     }
 
-    private static boolean doesDatabaseExist(Context context, String dbName) {
-        File dbFile = context.getDatabasePath(dbName);
+    private static boolean doesDatabaseExist(Context context) {
+        File dbFile = context.getDatabasePath(MainActivity.DB_NAME);
         return dbFile.exists();
     }
 
@@ -431,6 +477,7 @@ public class MainActivity extends AppCompatActivity {
         videoLessonLayout.setVisibility(View.GONE);
 
         hometaskLayout.setVisibility(View.VISIBLE);
+        hometaskListLayout.setVisibility(View.GONE);
         hometaskButton.setColorFilter(
                 ContextCompat.getColor(
                         this,
@@ -450,18 +497,24 @@ public class MainActivity extends AppCompatActivity {
         taskTypeSpinner.setAdapter(adapter);
 
         selectTypeButton.setOnClickListener(v -> {
+            int typeNum = taskTypeSpinner.getSelectedItemPosition() + 1;
             tasks = taskDao.getTaskByTypeNum(Integer.toString(taskTypeSpinner.getSelectedItemPosition() + 1));
             chooseTypeLayout.setVisibility(View.GONE);
+            hometaskListLayout.setVisibility(View.VISIBLE);
             RecyclerView recyclerView = findViewById(R.id.taskListRecyclerView);
-            TaskAdapter taskAdapter = new TaskAdapter(getApplicationContext(), tasks, taskDao);
+            TaskAdapter taskAdapter = new TaskAdapter(getApplicationContext(), tasks, taskDao, typeNum);
             recyclerView.setAdapter(taskAdapter);
-            recyclerView.setLayoutManager(new LinearLayoutManager(getApplicationContext()));
+            LinearLayoutManager linearLayoutManager = new LinearLayoutManager(getApplicationContext());
+            recyclerView.setLayoutManager(linearLayoutManager);
+            DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(recyclerView.getContext(),
+                    linearLayoutManager.getOrientation());
+            recyclerView.addItemDecoration(dividerItemDecoration);
             taskRecyclerViewLayout.setVisibility(View.VISIBLE);
         });
 
     }
 
-    private void showVideolesson(String html){
+    private void showVideoLesson(String html){
         clearButtonFilters();
         profileLayout.setVisibility(View.GONE);
         videoListLayout.setVisibility(View.GONE);
@@ -478,6 +531,7 @@ public class MainActivity extends AppCompatActivity {
         hometaskButton.clearColorFilter();
     }
 
+    @SuppressLint("SetJavaScriptEnabled")
     private void initWebViewPlayer(String html){
         videoScrollView.setVisibility(View.INVISIBLE);
         webView.loadData(html, "text/html", "utf-8");
@@ -506,7 +560,7 @@ public class MainActivity extends AppCompatActivity {
             try {
                 // Создаем экземпляр YouTube клиента с использованием API-ключа
                 YouTube youtube = new YouTube.Builder(new NetHttpTransport(), new GsonFactory(), new HttpRequestInitializer() {
-                    public void initialize(HttpRequest request) throws IOException {}
+                    public void initialize(HttpRequest request) {}
                 }).setApplicationName("YourAppName").build();
 
                 // Создаем запрос на получение данных о видео
@@ -524,12 +578,11 @@ public class MainActivity extends AppCompatActivity {
                 // Если видео найдено, получаем описание
                 if (videos != null && !videos.isEmpty()) {
                     Video video = videos.get(0);
-                    String description = video.getSnippet().getDescription();
-                    return description;
+                    return video.getSnippet().getDescription();
                 }
 
             } catch (Exception e) {
-                Log.e(TAG, "Failed to load video description", e);
+                Log.e(TAG, "Failed to load video description, " + e);
             }
 
             return "";
@@ -567,47 +620,8 @@ public class MainActivity extends AppCompatActivity {
 //  3.3 -> Опись типов данных по структуре: Название типа данных, ограничения/диапазон, названия переменных и на основе этого причина, по которой выбрали именно этот тип данных. ✅
 //  3.2 -> Сделать таблицу в БД, в которой хранятся: id, название урока, ссылка на YouTube, ссылка на превью ✅
 
-// 4. -> Окно видеоуроков (проигрыватель) ✅
+// 4. -> Окно видео уроков (проигрыватель) ✅
 // 4.1 -> Тайминги, описание и т.д. ✅
 
 // 5. -> Домашние задания (ЕГЭ) 1 часть ✅
-// 6. -> Домашние задания (ЕГЭ) 2 часть
-// 7. -> Обработку ответов пользователя
-
-
-
-
-
-
-
-
-
-
-
-
-//            expandableListView.setOnGroupExpandListener(new ExpandableListView.OnGroupExpandListener() {
-//                @Override
-//                public void onGroupExpand(int groupPosition) {
-////                    Toast.makeText(getApplicationContext(),
-////                            expandableListTitle.get(groupPosition) + " List Expanded.",
-////                            Toast.LENGTH_SHORT).show();
-//                }
-//            });
-//
-//            expandableListView.setOnGroupCollapseListener(new ExpandableListView.OnGroupCollapseListener() {
-//                @Override
-//                public void onGroupCollapse(int groupPosition) {
-////                    Toast.makeText(getApplicationContext(),
-////                            expandableListTitle.get(groupPosition) + " List Collapsed.",
-////                            Toast.LENGTH_SHORT).show();
-//                }
-//            });
-
-//                    Toast.makeText(
-//                            getApplicationContext(),
-//                            expandableListTitle.get(groupPosition)
-//                                    + " -> "
-//                                    + expandableListData.get(
-//                                    expandableListTitle.get(groupPosition)).get(
-//                                    childPosition).title, Toast.LENGTH_SHORT
-//                    ).show();
+// 6. -> Домашние задания (ЕГЭ) 2 часть ✅

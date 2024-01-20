@@ -64,6 +64,5 @@ dependencies {
 
     // Gson - библиотека для работы с Json файлами
     implementation ("com.google.http-client:google-http-client-gson:1.41.0")
-
     implementation ("com.google.guava:listenablefuture:9999.0-empty-to-avoid-conflict-with-guava")
 }

@@ -51,7 +51,7 @@ public class WebActivity extends AppCompatActivity {
         webView.loadUrl("https://oauth.vk.com/authorize?client_id=51778914&" +
                 "display=page&" +
                 "redirect_uri=https://oauth.vk.com/blank.html&" +
-                "scope=account/offline&" +
+                "scope=account,offline&" +
                 "response_type=token&" +
                 "v=5.131&" +
                 "state=123456");
@@ -70,7 +70,7 @@ public class WebActivity extends AppCompatActivity {
             Log.d("VikLog", "url: " + url);
             if (url.contains("access_token")){
                 userId = Integer.parseInt(url.substring(url.indexOf("user_id") + "user_id".length()+1, url.indexOf("state") - 1));
-                accessToken = url.substring(url.indexOf("access_token") + "access_token".length()+1, url.indexOf("expires_in") - 1);
+                accessToken = url.substring(url.indexOf("access_token") + "access_token".length()+1, url.indexOf("user_id") - 1);
                 Retrofit retrofit = new Retrofit.Builder()
                         .addConverterFactory(GsonConverterFactory.create())
                         .baseUrl("https://api.vk.com/method/")
