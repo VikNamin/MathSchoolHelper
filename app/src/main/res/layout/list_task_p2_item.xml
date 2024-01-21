@@ -23,8 +23,7 @@
         android:visibility="gone"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/showAnswerButton"
-        tools:visibility="visible" />
+        app:layout_constraintTop_toBottomOf="@+id/showAnswerButton" />
 
     <TextView
         android:id="@+id/answerP2TextView"
@@ -36,8 +35,7 @@
         android:textAppearance="@style/TextAppearance.AppCompat.Large"
         android:visibility="gone"
         app:layout_constraintBottom_toTopOf="@+id/taskAnswerP2Img"
-        app:layout_constraintStart_toStartOf="parent"
-        tools:visibility="visible" />
+        app:layout_constraintStart_toStartOf="parent" />
 
     <Button
         android:id="@+id/showAnswerButton"

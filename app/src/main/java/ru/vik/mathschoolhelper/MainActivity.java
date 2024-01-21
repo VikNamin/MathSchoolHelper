@@ -239,13 +239,6 @@ public class MainActivity extends AppCompatActivity {
                     showHometask();
                 }
             });
-
-//            trainButton.setOnClickListener(new View.OnClickListener() {
-//                @Override
-//                public void onClick(View v) {
-//                    showTrain();
-//                }
-//            });
         }
     }
 
