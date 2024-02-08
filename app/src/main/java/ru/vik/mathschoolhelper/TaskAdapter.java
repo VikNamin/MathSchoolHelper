@@ -50,7 +50,11 @@ public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.ViewHolder> {
         Task task = tasks.get(position);
         Log.d(MainActivity.TAG, "onBindViewHolder: NewBind on id " + task.id + ", userAnswer is " + task.userAnswer);
         if (!task.taskImageUrl.isEmpty()) {
+            holder.taskImg.setVisibility(View.VISIBLE);
             Picasso.get().load(task.taskImageUrl).into(holder.taskImg);
+        }
+        else {
+            holder.taskImg.setVisibility(View.GONE);
         }
         if (typeNum < 13){
             if (task.isDone != null){

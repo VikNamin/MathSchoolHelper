@@ -94,55 +94,62 @@ public class MainActivity extends AppCompatActivity {
 
     Spinner taskTypeSpinner;
 
+
+    // АЛГОРИТМ ПРОГРАММЫ
+    // Пункт 1 алгоритма. Вызов метода onCreate при запуске приложения пользователем, начальная настройка приложения
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+
+        // 1.1 Вызов методов super.onCreate и setContentView.
+        // Первый метод запускает активити с параметром сохраненного состояния приложения.
+        // Второй устанавливает пользовательскую разметку экрана (activity_main.xml)
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        // Создание БД Room
+        // 1.2 Создание БД Room
         AppDatabase db = Room.databaseBuilder(getApplicationContext(),
                 AppDatabase.class, DB_NAME).allowMainThreadQueries().fallbackToDestructiveMigration().build();
 
+        // 1.3 Создание переменных для работы с БД Room (Создание Data Access Object объектов)
         lessonDao = db.lessonDao();
         taskDao = db.taskDao();
 
-        // Заполнение таблицы БД данными, если она не существует
+        // 1.4 Заполнение таблицы БД данными, если она не существует
         if (!doesDatabaseExist(getApplicationContext())) {
-            setSampleData(lessonDao, taskDao);
+            DataSampleCreator.createDataSample(lessonDao, taskDao);
         }
 
+        // 1.5 Подключение файла, в котором хранятся сохраненные значения
         mSettings = getSharedPreferences(APP_PREFERENCES_NAME, Context.MODE_PRIVATE);
-        progressBar = findViewById(R.id.progressBar);
 
+        // 1.6 Нахождение на View элементов и присвоение их переменным для последующей работы
+        progressBar = findViewById(R.id.progressBar);
         profileLayout = findViewById(R.id.profileLayout);
         contentLayout = findViewById(R.id.contentConstraintLayout);
         hometaskLayout = findViewById(R.id.hometaskLayout);
         videoListLayout = findViewById(R.id.videoLessonListLayout);
         videoLessonLayout = findViewById(R.id.videoLessonLayout);
-
         hometaskListLayout = findViewById(R.id.taskRecyclerViewLayout);
-
         profileImageView = findViewById(R.id.profileImageView);
-
         profileButton = findViewById(R.id.cabinetButton);
         videoButton = findViewById(R.id.videoButton);
         hometaskButton = findViewById(R.id.homeTaskButton);
-
         fioTextView = findViewById(R.id.fioText);
         hometownTextView = findViewById(R.id.regionText);
         birthTextView = findViewById(R.id.bdText);
-        
         numberTextView = findViewById(R.id.telText);
         nicknameTextView = findViewById(R.id.vkText);
         descriptionTextView = findViewById(R.id.descriptionTextView);
-
         webView = findViewById(R.id.playerWebView);
-
         videoProgressBar = findViewById(R.id.videoProgressBar);
         videoScrollView = findViewById(R.id.videoScrollView);
-
         taskTypeSpinner = findViewById(R.id.spinnerAddType);
 
+        // 1.7.1 Условие. Если пользователь НЕ залогинен в приложение через сервис VK, то отображаем
+        // кнопку "Авторизация" с последующим запуска алгоритма авторизации пользователя в приложение
         if(!mSettings.getBoolean(APP_PREFERENCES_IS_LOGGED, false)){
             Log.d(TAG, "НЕ Залогинен");
             progressBar.setVisibility(View.GONE);
@@ -153,16 +160,17 @@ public class MainActivity extends AppCompatActivity {
                 startActivity(toWeb);
             });
         }
+        // 1.7.2 Если пользователь залогинен, то
         else {
-            Log.d(TAG, "Залогинен");
+
+            // Получаем сохраненные значения VK ID пользователя и токена
             String accessToken = mSettings.getString(APP_PREFERENCES_TOKEN, "");
-            Log.d(TAG, "accessToken: " + accessToken);
             String userID = mSettings.getString(APP_PREFERENCES_ID, "");
 
+            // Настраиваем пользовательский интерфейс
             progressBar.setVisibility(View.GONE);
             contentLayout.setVisibility(View.VISIBLE);
             profileLayout.setVisibility(View.VISIBLE);
-
             profileButton.setColorFilter(
                     ContextCompat.getColor(
                             this,
@@ -170,7 +178,7 @@ public class MainActivity extends AppCompatActivity {
                     ), android.graphics.PorterDuff.Mode.MULTIPLY
             );
 
-            // API Запросы, вывод информации о профиле
+            // Выполняем API Запросы, вывод информации о профиле
             Retrofit retrofit = new Retrofit.Builder()
                     .addConverterFactory(GsonConverterFactory.create())
                     .baseUrl("https://api.vk.com/method/")
@@ -197,51 +205,29 @@ public class MainActivity extends AppCompatActivity {
                 }
             });
 
-            // Вложенный список
+            // Создаем и заполняем данными из БД вложенный список
             expandableListView = (ExpandableListView) findViewById(R.id.expandableListView);
-
             fillAdapter(lessonDao);
-
             expandableListTitle = new ArrayList<>(expandableListData.keySet());
             expandableListAdapter = new CustomExpandableListAdapter(this, expandableListTitle, expandableListData);
             expandableListView.setAdapter(expandableListAdapter);
 
-            expandableListView.setOnChildClickListener(new ExpandableListView.OnChildClickListener() {
-                @Override
-                public boolean onChildClick(ExpandableListView parent, View v,
-                                            int groupPosition, int childPosition, long id) {
-                    // Открывается страница видеоурока
-                    Log.d(TAG, "url: " + expandableListData.get(expandableListTitle.get(groupPosition)).get(childPosition).htmlUrl);
-                    showVideoLesson(expandableListData.get(expandableListTitle.get(groupPosition)).get(childPosition).htmlUrl);
-                    videoNum = expandableListData.get(expandableListTitle.get(groupPosition)).get(childPosition).id;
-                    return false;
-                }
+            // Устанавливаем слушатели нажатий на элементы списка
+            expandableListView.setOnChildClickListener((parent, v, groupPosition, childPosition, id) -> {
+                // По нажатию открывается страница видеоурока
+                showVideoLesson(expandableListData.get(expandableListTitle.get(groupPosition)).get(childPosition).htmlUrl);
+                videoNum = expandableListData.get(expandableListTitle.get(groupPosition)).get(childPosition).id;
+                return false;
             });
 
-            // Слушатели нажатий кнопок меню
-            profileButton.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    showProfile();
-                }
-            });
-
-            videoButton.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    showVideoList();
-                }
-            });
-
-            hometaskButton.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    showHometask();
-                }
-            });
+            // Создаем слушатели нажатий кнопок верхнего меню
+            profileButton.setOnClickListener(v -> showProfile());
+            videoButton.setOnClickListener(v -> showVideoList());
+            hometaskButton.setOnClickListener(v -> showHometask());
         }
     }
 
+    // Метод относится к пункту 1.7.2, заполнение адаптера вложенного списка уроков данными
     private void fillAdapter(LessonDao lessonDao) {
         List<Lesson> lessonsByType = lessonDao.getByTypeNum("1");
         expandableListData.put("Разбор первой части ЕГЭ", lessonsByType);
@@ -253,188 +239,21 @@ public class MainActivity extends AppCompatActivity {
         expandableListData.put("Разбор вариантов ЕГЭ", lessonsByType);
     }
 
-    private void setSampleData(LessonDao lessonDao, TaskDao taskDao) {
-        Lesson lesson = new Lesson();
-
-        lesson.title = "Урок 1";
-        lesson.htmlUrl = "<iframe width=\"100%\" height=\"100%\" src=\"https://www.youtube.com/embed/ByVHQrB-KcA?si=-7M7YmHnguIIMds7\" title=\"YouTube video player\" frameborder=\"0\" allow=\"accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share\" allowfullscreen></iframe>";
-        lesson.url = "https://www.youtube.com/watch?v=ByVHQrB-KcA";
-        lesson.previewUrl = "https://pers-school.ru/upload/iblock/902/902f4345aa8e4617ca4a7aa6b888cf50.jpg";
-        lesson.typeNum = "1";
-        lessonDao.insertSample(lesson);
-
-        lesson.title = "Урок 2";
-        lesson.url = "https://www.youtube.com/watch?v=u4TJsCNEqS4";
-        lesson.htmlUrl = "<iframe width=\"100%\" height=\"100%\" src=\"https://www.youtube.com/embed/u4TJsCNEqS4?si=DF0QFDGKDYadVln3\" title=\"YouTube video player\" frameborder=\"0\" allow=\"accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share\" allowfullscreen></iframe>";
-        lesson.previewUrl = "https://pers-school.ru/upload/iblock/902/902f4345aa8e4617ca4a7aa6b888cf50.jpg";
-        lesson.typeNum = "1";
-        lessonDao.insertSample(lesson);
-
-        lesson.title = "Урок 1";
-        lesson.url = "https://www.youtube.com/watch?v=IrI_s-dLCVw";
-        lesson.htmlUrl = "<iframe width=\"100%\" height=\"100%\" src=\"https://www.youtube.com/embed/IrI_s-dLCVw?si=eK3OmQn9an2_EFNJ\" title=\"YouTube video player\" frameborder=\"0\" allow=\"accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share\" allowfullscreen></iframe>";
-        lesson.previewUrl = "https://pers-school.ru/upload/iblock/902/902f4345aa8e4617ca4a7aa6b888cf50.jpg";
-        lesson.typeNum = "2";
-        lessonDao.insertSample(lesson);
-
-        lesson.title = "Урок 2";
-        lesson.url = "https://www.youtube.com/watch?v=F3KuWG_HuVQ";
-        lesson.htmlUrl = "https://www.youtube.com/live/F3KuWG_HuVQ?si=wfkz9kU563Hx4tLP";
-        lesson.previewUrl = "https://pers-school.ru/upload/iblock/902/902f4345aa8e4617ca4a7aa6b888cf50.jpg";
-        lesson.typeNum = "2";
-        lessonDao.insertSample(lesson);
-
-        lesson.title = "Урок 3";
-        lesson.url = "https://www.youtube.com/watch?v=kMarWrCwul8";
-        lesson.htmlUrl = "<iframe width=\"100%\" height=\"100%\" src=\"https://www.youtube.com/embed/F3KuWG_HuVQ?si=YHStrnUgWGJTGO7o\" title=\"YouTube video player\" frameborder=\"0\" allow=\"accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share\" allowfullscreen></iframe>";
-        lesson.previewUrl = "https://pers-school.ru/upload/iblock/902/902f4345aa8e4617ca4a7aa6b888cf50.jpg";
-        lesson.typeNum = "2";
-        lessonDao.insertSample(lesson);
-
-        lesson.title = "Разбор Ященко вариант 9";
-        lesson.url = "https://www.youtube.com/watch?v=UVTMzhwPy94";
-        lesson.htmlUrl = "<iframe width=\"100%\" height=\"100%\" src=\"https://www.youtube.com/embed/UVTMzhwPy94?si=GskM63i4VxH8nGkW\" title=\"YouTube video player\" frameborder=\"0\" allow=\"accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share\" allowfullscreen></iframe>";
-        lesson.previewUrl = "https://pers-school.ru/upload/iblock/902/902f4345aa8e4617ca4a7aa6b888cf50.jpg";
-        lesson.typeNum = "3";
-        lessonDao.insertSample(lesson);
-
-        lesson.title = "Разбор Ященко вариант 11";
-        lesson.url = "https://www.youtube.com/watch?v=-12qzgVyVcQ";
-        lesson.htmlUrl = "<iframe width=\"100%\" height=\"100%\" src=\"https://www.youtube.com/embed/-12qzgVyVcQ?si=jt_oOHvqngF-dGxC\" title=\"YouTube video player\" frameborder=\"0\" allow=\"accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share\" allowfullscreen></iframe>";
-        lesson.previewUrl = "https://pers-school.ru/upload/iblock/902/902f4345aa8e4617ca4a7aa6b888cf50.jpg";
-        lesson.typeNum = "3";
-        lessonDao.insertSample(lesson);
-
-        //-------------------------------------------//
-
-        Task task = new Task();
-
-        task.taskType = "1";
-        task.text = "В равнобедренной трапеции большее основание равно 25, боковая сторона равна 10, угол между ними 60°  Найдите меньшее основание.";
-        task.taskImageUrl = "https://i.imgur.com/ULQSkER.png";
-        task.answer = "15";
-        taskDao.insertSample(task);
-
-        task.taskType = "1";
-        task.text = "Найдите угол ACO, если его сторона CA касается окружности, O - центр окружности, сторона CO пересекает окружность в точках B и D, а дуга AD окружности, заключенная внутри этого угла, равна 116°. Ответ дайте в градусах.";
-        task.taskImageUrl = "https://i.imgur.com/Bxemfee.png";
-        task.answer = "26";
-        taskDao.insertSample(task);
-
-        task.taskType = "1";
-        task.text = "Боковая сторона равнобедренного треугольника равна 5, угол при вершине, противолежащей основанию, равен 120°. Найдите диаметр описанной окружности этого треугольника.";
-        task.taskImageUrl = "https://i.imgur.com/2vyBbNF.png";
-        task.answer = "10";
-        taskDao.insertSample(task);
-
-        task.taskType = "1";
-        task.text = "В треугольнике ABC угол C равен 90°, AC = 2, cosA = 0.1  Найдите AB";
-        task.taskImageUrl = "https://i.imgur.com/4xIlh5O.png";
-        task.answer = "20";
-        taskDao.insertSample(task);
-
-        task.taskType = "1";
-        task.text = "Чему равен тупой вписанный угол, опирающийся на хорду, равную радиусу окружности? Ответ дайте в градусах.";
-        task.taskImageUrl = "https://i.imgur.com/90629Ti.png";
-        task.answer = "150";
-        taskDao.insertSample(task);
-
-        task.taskType = "1";
-        task.text = "В треугольнике ABC AC = BC, AB = 8, cosA = 0.5 Найдите AC.";
-        task.taskImageUrl = "https://i.imgur.com/Qgy9XoR.png";
-        task.answer = "8";
-        taskDao.insertSample(task);
-
-        task.taskType = "1";
-        task.text = "Острый угол ромба равен 30°. Радиус вписанной в этот ромб окружности равен 9. Найдите сторону ромба.";
-        task.taskImageUrl = "https://i.imgur.com/bwKjRhf.png";
-        task.answer = "36";
-        taskDao.insertSample(task);
-
-        task.taskType = "1";
-        task.text = "В треугольнике ABC угол A равен 62°, внешний угол при вершине B равен 118° . Найдите угол C. Ответ дайте в градусах.";
-        task.taskImageUrl = "https://i.imgur.com/Nn0MBMX.png";
-        task.answer = "56";
-        taskDao.insertSample(task);
-
-        task.taskType = "1";
-        task.text = "Площадь параллелограмма ABCD равна 14. Найдите площадь параллелограмма A'B'C'D', вершинами которого являются середины сторон данного параллелограмма.";
-        task.taskImageUrl = "";
-        task.answer = "7";
-        taskDao.insertSample(task);
-
-        task.taskType = "1";
-        task.text = "В треугольнике ABC угол A равен 60°, угол B равен 82°. AD, BE и CF — высоты, пересекающиеся в точке O. Найдите угол AOF. Ответ дайте в градусах.";
-        task.taskImageUrl = "https://i.imgur.com/mFc54PO.png";
-        task.answer = "82";
-        taskDao.insertSample(task);
-
-        //-------------------------------------------//
-
-        task.taskType = "13";
-        task.taskImageUrl = "https://i.imgur.com/6m59vzH.png";
-        task.answer = "https://i.imgur.com/OeOppGi.png";
-        taskDao.insertSample(task);
-
-        task.taskType = "13";
-        task.taskImageUrl = "https://i.imgur.com/94qcJV9.png";
-        task.answer = "https://i.imgur.com/SxGPTbK.png";
-        taskDao.insertSample(task);
-
-        task.taskType = "13";
-        task.taskImageUrl = "https://i.imgur.com/KstTCdd.png";
-        task.answer = "https://i.imgur.com/E21K0Om.png";
-        taskDao.insertSample(task);
-
-        task.taskType = "13";
-        task.taskImageUrl = "https://i.imgur.com/eAbbC7z.png";
-        task.answer = "https://i.imgur.com/wYApcOc.png";
-        taskDao.insertSample(task);
-
-        task.taskType = "13";
-        task.taskImageUrl = "https://i.imgur.com/ih0oq6y.png";
-        task.answer = "https://i.imgur.com/aRaFGYO.png";
-        taskDao.insertSample(task);
-
-        task.taskType = "13";
-        task.taskImageUrl = "https://i.imgur.com/t9yTDhY.png";
-        task.answer = "https://i.imgur.com/RIupmay.png";
-        taskDao.insertSample(task);
-
-        task.taskType = "13";
-        task.taskImageUrl = "https://i.imgur.com/1Gp3zbI.png";
-        task.answer = "https://i.imgur.com/5eO9MAf.png";
-        taskDao.insertSample(task);
-
-        task.taskType = "13";
-        task.taskImageUrl = "https://i.imgur.com/WIU54cc.png";
-        task.answer = "https://i.imgur.com/OuWpO6K.png";
-        taskDao.insertSample(task);
-
-        task.taskType = "13";
-        task.taskImageUrl = "https://i.imgur.com/lkS22Lm.png";
-        task.answer = "https://i.imgur.com/izQnGUb.png";
-        taskDao.insertSample(task);
-
-        task.taskType = "13";
-        task.taskImageUrl = "https://i.imgur.com/Lmej7Ta.png";
-        task.answer = "https://i.imgur.com/juWI6Rh.png";
-        taskDao.insertSample(task);
-    }
-
+    // Метод относится к пункту 1.4, проверка существования БД
     private static boolean doesDatabaseExist(Context context) {
         File dbFile = context.getDatabasePath(MainActivity.DB_NAME);
         return dbFile.exists();
     }
 
+    // Пункт 2 алгоритма. Вывод профиля пользователя
     private void showProfile(){
+
+        // 2.1 Настройка пользовательского интерфейса
         clearButtonFilters();
         videoListLayout.setVisibility(View.GONE);
         hometaskLayout.setVisibility(View.GONE);
-
         killWebViewPlayer();
         videoLessonLayout.setVisibility(View.GONE);
-
         profileLayout.setVisibility(View.VISIBLE);
         profileButton.setColorFilter(
                 ContextCompat.getColor(
@@ -444,7 +263,10 @@ public class MainActivity extends AppCompatActivity {
         );
     }
 
+    // Пункт 3 алгоритма. Вывод списка видеоуроков
     private void showVideoList(){
+
+        // 3.1 Настройка пользовательского интерфейса
         clearButtonFilters();
         profileLayout.setVisibility(View.GONE);
         hometaskLayout.setVisibility(View.GONE);
@@ -461,14 +283,15 @@ public class MainActivity extends AppCompatActivity {
         );
     }
 
+    // Пункт 4 алгоритма. Вывод списка домашних заданий
     private void showHometask(){
+
+        // 4.1 Настройка пользовательского интерфейса
         clearButtonFilters();
         profileLayout.setVisibility(View.GONE);
         videoListLayout.setVisibility(View.GONE);
-
         killWebViewPlayer();
         videoLessonLayout.setVisibility(View.GONE);
-
         hometaskLayout.setVisibility(View.VISIBLE);
         hometaskListLayout.setVisibility(View.GONE);
         hometaskButton.setColorFilter(
@@ -477,19 +300,22 @@ public class MainActivity extends AppCompatActivity {
                         R.color.toolbar_button_color_tint
                 ), android.graphics.PorterDuff.Mode.MULTIPLY
         );
-
         ConstraintLayout chooseTypeLayout = findViewById(R.id.chooseTypeLayout);
         ConstraintLayout taskRecyclerViewLayout = findViewById(R.id.taskRecyclerViewLayout);
         Button selectTypeButton = findViewById(R.id.selectTaskTypeButton);
         chooseTypeLayout.setVisibility(View.VISIBLE);
         taskRecyclerViewLayout.setVisibility(View.GONE);
 
+        // 4.2 Заполнение выпадающего списка данными
         ArrayAdapter<?> adapter =
                 ArrayAdapter.createFromResource(this, R.array.taskType, android.R.layout.simple_spinner_item);
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         taskTypeSpinner.setAdapter(adapter);
 
+        // 4.3 Создание слушателя нажатия на кнопку выбора домашнего задания
         selectTypeButton.setOnClickListener(v -> {
+
+            // 4.4 По нажатию на кнопку, вывод выбранных пользователем домашних заданий списком
             int typeNum = taskTypeSpinner.getSelectedItemPosition() + 1;
             tasks = taskDao.getTaskByTypeNum(Integer.toString(taskTypeSpinner.getSelectedItemPosition() + 1));
             chooseTypeLayout.setVisibility(View.GONE);
@@ -507,7 +333,9 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+    // Пункт 5 алгоритма. Вывод видеоурока
     private void showVideoLesson(String html){
+        // 5.1 Настройка пользовательского интерфейса
         clearButtonFilters();
         profileLayout.setVisibility(View.GONE);
         videoListLayout.setVisibility(View.GONE);
@@ -515,15 +343,19 @@ public class MainActivity extends AppCompatActivity {
 
         videoProgressBar.setVisibility(View.VISIBLE);
         videoLessonLayout.setVisibility(View.VISIBLE);
+
+        // 5.2 Инициализация и запуск плеера с выбранным видеоуроком
         initWebViewPlayer(html);
     }
 
+    // Вспомогательный метод для настройки UI
     private void clearButtonFilters(){
         profileButton.clearColorFilter();
         videoButton.clearColorFilter();
         hometaskButton.clearColorFilter();
     }
 
+    // Метод относится к пункту 5.2. Запуск плеера webView с выбранным видеоуроком
     @SuppressLint("SetJavaScriptEnabled")
     private void initWebViewPlayer(String html){
         videoScrollView.setVisibility(View.INVISIBLE);
@@ -541,11 +373,13 @@ public class MainActivity extends AppCompatActivity {
         new LoadVideoDescriptionTask().execute();
     }
 
+    // Вспомогательный метод. Останавливает плеер для очистки памяти
     private void killWebViewPlayer(){
         videoProgressBar.setVisibility(View.GONE);
         webView.onPause();
     }
 
+    // Вспомогательный класс для получения описания видео, в фоновом потоке. Используется YouTube API
     private class LoadVideoDescriptionTask extends AsyncTask<Void, Void, String> {
 
         @Override
@@ -587,6 +421,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    // Вспомогательный метод для получения из строки значения videoId. Использует регулярные выражения
     public static String extractVideoId(String url) {
         String videoId = null;
         if (url != null && url.trim().length() > 0) {
